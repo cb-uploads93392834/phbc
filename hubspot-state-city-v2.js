@@ -47,7 +47,7 @@
   --prexion-blue:#4396cb;--prexion-deep:#256294;--prexion-cyan:#1eb8e0;--prexion-ink:#15394f;
   width:100%!important;max-width:100%!important;margin:0!important;padding:28px!important;
   border:0!important;border-top:0!important;
-  border-radius:3px!important;background:#fff!important;box-shadow:0 8px 28px rgba(10,26,38,.06);
+  border-radius:3px!important;background:#fff!important;box-shadow:none!important;
   color:var(--prexion-ink)!important;font:400 16px/1.6 PreXionFormLato,Lato,Arial,sans-serif!important;
 }
 .prexion-form fieldset{max-width:none!important;min-width:0!important;width:100%!important;margin:0!important;padding:0!important;border:0!important}
