@@ -46,8 +46,7 @@
 .prexion-form{
   --prexion-blue:#4396cb;--prexion-deep:#256294;--prexion-cyan:#1eb8e0;--prexion-ink:#15394f;
   width:100%!important;max-width:100%!important;margin:0!important;padding:28px!important;
-  border:1px solid #dce6ed!important;border-top:3px solid var(--prexion-blue)!important;
-  border-radius:3px!important;background:#fff!important;box-shadow:0 8px 28px rgba(10,26,38,.06);
+  border:0!important;border-radius:0!important;background:#fff!important;box-shadow:none!important;
   color:var(--prexion-ink)!important;font:400 16px/1.6 PreXionFormLato,Lato,Arial,sans-serif!important;
 }
 .prexion-form fieldset{max-width:none!important;min-width:0!important;width:100%!important;margin:0!important;padding:0!important;border:0!important}
@@ -308,7 +307,7 @@
     }
   }
 
-  window.HubSpotStateCity = { attach, mount, states: STATES, cities: DATA, version: "2.2.0" };
+  window.HubSpotStateCity = { attach, mount, states: STATES, cities: DATA, version: "2.2.1" };
   if (bootScript && bootScript.dataset.manual !== "true") {
     const settings = {};
     ["portalId", "formId", "region", "target", "stateField", "cityField"].forEach(key => {
