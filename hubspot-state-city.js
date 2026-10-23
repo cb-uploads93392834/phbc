@@ -1,5 +1,5 @@
 /*
- * HubSpot State/City picker v1 - self-contained GitHub upload.
+ * HubSpot State/City picker v2 - self-contained GitHub upload, dropdown only.
  * Includes 33,998 city/town/place names for all 50 U.S. states plus D.C.
  * Source: U.S. Census Bureau 2026 Gazetteer places and county subdivisions.
  * https://www.census.gov/geographies/reference-files/time-series/geo/gazetteer-files.html
@@ -8,7 +8,7 @@
  * Excludes territories, neighborhoods and postal-only aliases.
  * Census geographic facts may be reused and redistributed.
  * No affiliation with or endorsement by the Census Bureau or HubSpot.
- * Upload this file as hubspot-state-city.js to your GitHub Pages repository.
+ * Upload this file as hubspot-state-city-v2.js to your GitHub repository.
  * City data is bundled; HubSpot's official embed library is loaded from HubSpot.
  */
 (function () {
@@ -21,8 +21,8 @@
     formId: "9cef9939-132c-4fc1-89b5-3b2873ac0794",
     region: "na1",
     target: "#hubspot-state-city",
-    stateField: "us_states",
-    cityField: "city",
+    stateField: "TICKET.us_states",
+    cityField: "TICKET.city",
     cityRequired: false
   };
   const normalize = value => String(value || "").trim().toLowerCase();
@@ -36,8 +36,14 @@
 
   function field(form, name, tag) {
     const candidates = Array.from(form.querySelectorAll(tag + "[name]"));
+    const canonical = value => String(value).replace(/^TICKET\./, "0-5/")
+      .replace(/^FEEDBACK_SUBMISSION\./, "0-19/");
+    const plainName = name.split(/[/.]/).pop();
     return candidates.find(el => el.name === name) ||
-      candidates.find(el => el.name.endsWith("/" + name));
+      candidates.find(el => canonical(el.name) === canonical(name)) ||
+      candidates.find(el => el.name === plainName) ||
+      candidates.find(el => el.name.endsWith("/" + plainName)) ||
+      candidates.find(el => el.name.endsWith("." + plainName));
   }
 
   function attach(form, settings) {
@@ -63,30 +69,29 @@
     picker.required = required;
     picker.setAttribute("aria-required", String(required));
     picker.setAttribute("aria-label", "City");
-    // No name on the custom controls: HubSpot submits its original City input.
-    const search = doc.createElement("input");
-    search.type = "search";
-    search.className = city.className;
-    search.placeholder = "Search cities...";
-    search.setAttribute("aria-label", "Search cities in the selected state");
-    search.setAttribute("aria-controls", picker.id);
-    search.style.marginBottom = "8px";
+    // No name on the custom select: HubSpot submits its original City input.
     const status = doc.createElement("span");
     status.id = picker.id + "-status";
     status.setAttribute("role", "status");
     status.style.display = "block";
     picker.setAttribute("aria-describedby", status.id);
-    search.setAttribute("aria-describedby", status.id);
-    city.type = "hidden";
-    city.insertAdjacentElement("afterend", search);
-    search.insertAdjacentElement("afterend", picker);
+    // Preserve the text input type so HubSpot/React still process its input events.
+    // The visible select handles native validation; HubSpot keeps its own schema.
+    city.style.display = "none";
+    city.required = false;
+    city.setAttribute("aria-hidden", "true");
+    city.setAttribute("tabindex", "-1");
+    city.insertAdjacentElement("afterend", picker);
     picker.insertAdjacentElement("afterend", status);
     form.querySelectorAll("label").forEach(label => {
       if (city.id && label.htmlFor === city.id) label.htmlFor = picker.id;
     });
 
     function save(value) {
-      city.value = value;
+      const InputClass = doc.defaultView.HTMLInputElement;
+      const setter = InputClass && Object.getOwnPropertyDescriptor(InputClass.prototype, "value");
+      if (setter && setter.set) setter.set.call(city, value);
+      else city.value = value;
       const BrowserEvent = doc.defaultView.Event;
       city.dispatchEvent(new BrowserEvent("input", { bubbles: true }));
       city.dispatchEvent(new BrowserEvent("change", { bubbles: true }));
@@ -98,23 +103,16 @@
       container.appendChild(option);
     }
     function render() {
-      const query = normalize(search.value);
-      const matches = query ? cities.filter(name => normalize(name).includes(query)) : cities;
       picker.replaceChildren();
       addOption(!state.value ? "Select a state first" : !cities.length ?
-        "No cities available for this state" : !matches.length ?
-        "No matching cities" : "Select a city", "", picker);
+        "No cities available for this state" : "Select a city", "", picker);
       const fragment = doc.createDocumentFragment();
-      matches.forEach(name => addOption(name, name, fragment));
-      // Filtering must not silently change a city the visitor already selected.
-      if (selected && !matches.includes(selected)) addOption(selected, selected, fragment);
+      cities.forEach(name => addOption(name, name, fragment));
       picker.appendChild(fragment);
       picker.value = selected;
       picker.disabled = !cities.length;
-      search.disabled = !cities.length;
       status.textContent = state.value && !cities.length ?
-        "This state is not in the U.S. city dataset." :
-        query ? matches.length.toLocaleString() + " matching cities" : "";
+        "This state is not in the U.S. city dataset." : "";
     }
     function refresh(preferred) {
       const option = state.options[state.selectedIndex];
@@ -122,7 +120,6 @@
         stateCodes.get(normalize(option && option.textContent)));
       cities = code ? DATA[code] || [] : [];
       selected = cities.find(name => normalize(name) === normalize(preferred)) || "";
-      search.value = "";
       save(selected);
       render();
     }
@@ -131,10 +128,6 @@
       selected = picker.value;
       save(selected);
       status.textContent = "";
-    });
-    search.addEventListener("input", render);
-    search.addEventListener("keydown", event => {
-      if (event.key === "Enter") { event.preventDefault(); picker.focus(); }
     });
     function guard(event) {
       if ((!required && !selected) || (state.value && cities.includes(selected))) {
@@ -154,7 +147,7 @@
     }, true);
     form.addEventListener("reset", () => { setTimeout(() => refresh(), 0); });
     refresh(initialCity);
-    return { picker, search, status };
+    return { picker, status };
   }
 
   let hubspotReady;
@@ -217,7 +210,7 @@
     }
   }
 
-  window.HubSpotStateCity = { attach, mount, states: STATES, cities: DATA, version: "1.0.0" };
+  window.HubSpotStateCity = { attach, mount, states: STATES, cities: DATA, version: "2.0.0" };
   if (bootScript && bootScript.dataset.manual !== "true") {
     const settings = {};
     ["portalId", "formId", "region", "target", "stateField", "cityField"].forEach(key => {
