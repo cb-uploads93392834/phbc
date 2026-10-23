@@ -42,6 +42,7 @@
 @font-face{font-family:PreXionFormTitillium;font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/titilliumweb/v19/NaPDcZTIAOhVxoMyOr9n_E7ffBzCGItzYw.woff2) format('woff2')}
 @font-face{font-family:PreXionFormTitillium;font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/titilliumweb/v19/NaPDcZTIAOhVxoMyOr9n_E7ffHjDGItzYw.woff2) format('woff2')}
 .prexion-form,.prexion-form *{box-sizing:border-box}
+.prexion-form [hidden]{display:none!important}
 .prexion-form{
   --prexion-blue:#4396cb;--prexion-deep:#256294;--prexion-cyan:#1eb8e0;--prexion-ink:#15394f;
   width:100%!important;max-width:100%!important;margin:0!important;padding:28px!important;
@@ -146,6 +147,10 @@
     applyBranding(form);
     form.dataset.stateCityReady = "true";
     const doc = form.ownerDocument;
+    const cityContainer = city.closest(".hs-form-field");
+    const cityField = cityContainer && cityContainer !== city && cityContainer !== form ? cityContainer : null;
+    const cityLabels = Array.from(form.querySelectorAll("label")).filter(label =>
+      city.id && label.htmlFor === city.id);
     const required = config.cityRequired || city.required ||
       city.getAttribute("aria-required") === "true";
     let initialCity = city.value;
@@ -171,9 +176,7 @@
     city.setAttribute("tabindex", "-1");
     city.insertAdjacentElement("afterend", picker);
     picker.insertAdjacentElement("afterend", status);
-    form.querySelectorAll("label").forEach(label => {
-      if (city.id && label.htmlFor === city.id) label.htmlFor = picker.id;
-    });
+    cityLabels.forEach(label => { label.htmlFor = picker.id; });
 
     function save(value) {
       const InputClass = doc.defaultView.HTMLInputElement;
@@ -191,6 +194,13 @@
       container.appendChild(option);
     }
     function render() {
+      const showCity = Boolean(state.value);
+      // Hide the wrapper as well so its label, spacing and errors are not shown.
+      if (cityField) cityField.hidden = !showCity;
+      else cityLabels.forEach(label => { label.hidden = !showCity; });
+      picker.hidden = !showCity;
+      status.hidden = !showCity;
+      picker.required = showCity && required;
       picker.replaceChildren();
       addOption(!state.value ? "Select a state first" : !cities.length ?
         "No cities available for this state" : "Select a city", "", picker);
@@ -198,7 +208,7 @@
       cities.forEach(name => addOption(name, name, fragment));
       picker.appendChild(fragment);
       picker.value = selected;
-      picker.disabled = !cities.length;
+      picker.disabled = !showCity || !cities.length;
       status.textContent = state.value && !cities.length ?
         "This state is not in the U.S. city dataset." : "";
     }
@@ -298,7 +308,7 @@
     }
   }
 
-  window.HubSpotStateCity = { attach, mount, states: STATES, cities: DATA, version: "2.1.0" };
+  window.HubSpotStateCity = { attach, mount, states: STATES, cities: DATA, version: "2.2.0" };
   if (bootScript && bootScript.dataset.manual !== "true") {
     const settings = {};
     ["portalId", "formId", "region", "target", "stateField", "cityField"].forEach(key => {
