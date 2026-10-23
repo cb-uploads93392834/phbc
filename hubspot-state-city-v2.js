@@ -18,11 +18,11 @@
   const STATES = [{"code":"AL","name":"Alabama"},{"code":"AK","name":"Alaska"},{"code":"AZ","name":"Arizona"},{"code":"AR","name":"Arkansas"},{"code":"CA","name":"California"},{"code":"CO","name":"Colorado"},{"code":"CT","name":"Connecticut"},{"code":"DE","name":"Delaware"},{"code":"DC","name":"District of Columbia"},{"code":"FL","name":"Florida"},{"code":"GA","name":"Georgia"},{"code":"HI","name":"Hawaii"},{"code":"ID","name":"Idaho"},{"code":"IL","name":"Illinois"},{"code":"IN","name":"Indiana"},{"code":"IA","name":"Iowa"},{"code":"KS","name":"Kansas"},{"code":"KY","name":"Kentucky"},{"code":"LA","name":"Louisiana"},{"code":"ME","name":"Maine"},{"code":"MD","name":"Maryland"},{"code":"MA","name":"Massachusetts"},{"code":"MI","name":"Michigan"},{"code":"MN","name":"Minnesota"},{"code":"MS","name":"Mississippi"},{"code":"MO","name":"Missouri"},{"code":"MT","name":"Montana"},{"code":"NE","name":"Nebraska"},{"code":"NV","name":"Nevada"},{"code":"NH","name":"New Hampshire"},{"code":"NJ","name":"New Jersey"},{"code":"NM","name":"New Mexico"},{"code":"NY","name":"New York"},{"code":"NC","name":"North Carolina"},{"code":"ND","name":"North Dakota"},{"code":"OH","name":"Ohio"},{"code":"OK","name":"Oklahoma"},{"code":"OR","name":"Oregon"},{"code":"PA","name":"Pennsylvania"},{"code":"RI","name":"Rhode Island"},{"code":"SC","name":"South Carolina"},{"code":"SD","name":"South Dakota"},{"code":"TN","name":"Tennessee"},{"code":"TX","name":"Texas"},{"code":"UT","name":"Utah"},{"code":"VT","name":"Vermont"},{"code":"VA","name":"Virginia"},{"code":"WA","name":"Washington"},{"code":"WV","name":"West Virginia"},{"code":"WI","name":"Wisconsin"},{"code":"WY","name":"Wyoming"}];
   const defaults = {
     portalId: "21203560",
-    formId: "9cef9939-132c-4fc1-89b5-3b2873ac0794",
+    formId: "4e78649f-555f-4ec9-9c4c-a46205828394",
     region: "na1",
     target: "#hubspot-state-city",
-    stateField: "TICKET.us_states",
-    cityField: "TICKET.city",
+    stateField: "state_dropdown",
+    cityField: "city",
     cityRequired: false
   };
   const normalize = value => String(value || "").trim().toLowerCase();
@@ -33,6 +33,93 @@
   stateCodes.set("washington dc", "DC");
   stateCodes.set("washington, d.c.", "DC");
   stateCodes.set("d.c.", "DC");
+
+  // PreXion branding lives in this file so no separate CSS upload is needed.
+  // Install in the form's own document: this also styles accessible legacy iframes.
+  const BRAND_CSS = `
+@font-face{font-family:PreXionFormLato;font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/lato/v25/S6uyw4BMUTPHjx4wXg.woff2) format('woff2')}
+@font-face{font-family:PreXionFormLato;font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/lato/v25/S6u9w4BMUTPHh6UVSwiPGQ.woff2) format('woff2')}
+@font-face{font-family:PreXionFormTitillium;font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/titilliumweb/v19/NaPDcZTIAOhVxoMyOr9n_E7ffBzCGItzYw.woff2) format('woff2')}
+@font-face{font-family:PreXionFormTitillium;font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/titilliumweb/v19/NaPDcZTIAOhVxoMyOr9n_E7ffHjDGItzYw.woff2) format('woff2')}
+.prexion-form,.prexion-form *{box-sizing:border-box}
+.prexion-form{
+  --prexion-blue:#4396cb;--prexion-deep:#256294;--prexion-cyan:#1eb8e0;--prexion-ink:#15394f;
+  width:100%!important;max-width:100%!important;margin:0!important;padding:28px!important;
+  border:1px solid #dce6ed!important;border-top:3px solid var(--prexion-blue)!important;
+  border-radius:3px!important;background:#fff!important;box-shadow:0 8px 28px rgba(10,26,38,.06);
+  color:var(--prexion-ink)!important;font:400 16px/1.6 PreXionFormLato,Lato,Arial,sans-serif!important;
+}
+.prexion-form fieldset{max-width:none!important;min-width:0!important;width:100%!important;margin:0!important;padding:0!important;border:0!important}
+.prexion-form .hs-form-field{margin-bottom:20px!important}
+.prexion-form .input{margin-right:0!important}
+.prexion-form label:not(.hs-error-msg){display:block;margin:0 0 8px!important;color:var(--prexion-ink)!important;font:700 14px/1.45 PreXionFormLato,Lato,Arial,sans-serif!important}
+.prexion-form .hs-form-required{margin-left:3px;color:#ba3541!important}
+.prexion-form input[type=text],.prexion-form input[type=email],.prexion-form input[type=tel],
+.prexion-form input[type=number],.prexion-form input[type=date],.prexion-form input[type=time],
+.prexion-form select,.prexion-form textarea{
+  width:100%!important;max-width:100%!important;min-height:50px!important;height:auto!important;
+  padding:12px 14px!important;border:1px solid #cbdbe6!important;border-radius:3px!important;
+  background:#f9fbfd!important;color:var(--prexion-ink)!important;
+  font:400 16px/1.5 PreXionFormLato,Lato,Arial,sans-serif!important;
+  box-shadow:none!important;transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease;
+}
+.prexion-form select{appearance:auto!important;cursor:pointer;padding-right:32px!important}
+.prexion-form select option{background:#fff;color:#15394f}
+.prexion-form textarea{min-height:140px!important;resize:vertical}
+.prexion-form input::placeholder,.prexion-form textarea::placeholder{color:#7c929f!important;opacity:1}
+.prexion-form input:focus,.prexion-form select:focus,.prexion-form textarea:focus{
+  outline:none!important;border-color:var(--prexion-blue)!important;background:#fff!important;
+  box-shadow:0 0 0 3px rgba(67,150,203,.17)!important;
+}
+.prexion-form select:disabled{cursor:not-allowed;background:#eef3f6!important;color:#758b99!important}
+.prexion-form input[aria-hidden=true],.prexion-form input[type=hidden]{display:none!important}
+.prexion-form .hs-fieldtype-intl-phone.hs-input{display:flex!important;gap:8px;width:100%!important;height:auto!important;padding:0!important;border:0!important;background:transparent!important}
+.prexion-form .hs-fieldtype-intl-phone.hs-input>select{flex:0 0 105px;width:105px!important;max-width:38%!important;padding-right:24px!important}
+.prexion-form .hs-fieldtype-intl-phone.hs-input>input{flex:1;min-width:0!important;width:0!important}
+.prexion-form ul.inputs-list,.prexion-form ul.hs-error-msgs{list-style:none!important;margin:0!important;padding:0!important}
+.prexion-form .hs-form-booleancheckbox-display{display:flex!important;align-items:flex-start;gap:10px;margin-bottom:0!important}
+.prexion-form .hs-form-booleancheckbox-display>span{flex:1;margin-left:0!important;color:#526675!important;font:400 13px/1.6 PreXionFormLato,Lato,Arial,sans-serif!important}
+.prexion-form input[type=checkbox],.prexion-form input[type=radio]{flex:0 0 18px;width:18px!important;height:18px!important;min-height:18px!important;margin:2px 0 0!important;accent-color:var(--prexion-deep);cursor:pointer}
+.prexion-form .hs-field-desc,.prexion-form .legal-consent-container,.prexion-form [role=status]{color:#647e8e!important;font:400 13px/1.5 PreXionFormLato,Lato,Arial,sans-serif!important}
+.prexion-form [role=status]:empty{display:none!important}
+.prexion-form .hs-error-msgs label,.prexion-form .hs-error-msg{display:block;margin:6px 0 0!important;color:#b52d3c!important;font:400 13px/1.5 PreXionFormLato,Lato,Arial,sans-serif!important}
+.prexion-form input.invalid,.prexion-form select.invalid,.prexion-form textarea.invalid{border-color:#b52d3c!important}
+.prexion-form .hs_submit,.prexion-form .hs-submit{margin-top:8px!important}
+.prexion-form .hs-button,.prexion-form input[type=submit],.prexion-form button[type=submit]{
+  display:inline-block!important;width:100%!important;min-height:50px!important;padding:13px 28px!important;
+  border:0!important;border-radius:3px!important;color:#fff!important;
+  background:linear-gradient(180deg,#256294 0%,#2b74a3 100%)!important;
+  font:700 16px/1.5 PreXionFormTitillium,'Titillium Web',Arial,sans-serif!important;
+  letter-spacing:.09em!important;text-transform:uppercase!important;text-align:center!important;text-shadow:none!important;
+  box-shadow:0 3px 8px rgba(37,98,148,.15)!important;cursor:pointer;
+  transition:background .18s ease,box-shadow .18s ease;
+}
+.prexion-form .hs-button:hover,.prexion-form input[type=submit]:hover,.prexion-form button[type=submit]:hover{background:linear-gradient(180deg,#1c4f79 0%,#246a98 100%)!important;box-shadow:0 5px 12px rgba(37,98,148,.22)!important}
+.prexion-form .hs-button:focus-visible,.prexion-form input[type=submit]:focus-visible,.prexion-form button[type=submit]:focus-visible{outline:3px solid var(--prexion-cyan)!important;outline-offset:3px}
+.prexion-form .hs-button:disabled{opacity:.6;cursor:wait}
+.prexion-form a{color:var(--prexion-deep)!important;text-decoration:underline}
+.prexion-form h1,.prexion-form h2,.prexion-form h3{color:var(--prexion-deep)!important;font-family:PreXionFormTitillium,'Titillium Web',Arial,sans-serif!important}
+.prexion-form fieldset.form-columns-2{column-gap:18px}
+.prexion-form fieldset.form-columns-2 .hs-form-field{padding-right:9px}
+.prexion-form fieldset.form-columns-2 .hs-form-field:last-child{padding-right:0;padding-left:9px}
+@media(max-width:560px){
+  .prexion-form{padding:20px 16px!important;box-shadow:none}
+  .prexion-form .hs-form-field{margin-bottom:18px!important}
+  .prexion-form fieldset.form-columns-2 .hs-form-field,.prexion-form fieldset.form-columns-3 .hs-form-field{float:none!important;width:100%!important;padding-left:0!important;padding-right:0!important}
+}
+@media(prefers-reduced-motion:reduce){.prexion-form *{transition:none!important}}
+`;
+
+  function applyBranding(form) {
+    const doc = form.ownerDocument;
+    form.classList.add("prexion-form");
+    if (!doc.getElementById("prexion-hubspot-brand-css")) {
+      const style = doc.createElement("style");
+      style.id = "prexion-hubspot-brand-css";
+      style.textContent = BRAND_CSS;
+      doc.head.appendChild(style);
+    }
+  }
 
   function field(form, name, tag) {
     const candidates = Array.from(form.querySelectorAll(tag + "[name]"));
@@ -56,6 +143,7 @@
         " and a visible City single-line text field named " + config.cityField +
         ". Enable raw HTML mode in the HubSpot legacy form.");
     }
+    applyBranding(form);
     form.dataset.stateCityReady = "true";
     const doc = form.ownerDocument;
     const required = config.cityRequired || city.required ||
@@ -210,7 +298,7 @@
     }
   }
 
-  window.HubSpotStateCity = { attach, mount, states: STATES, cities: DATA, version: "2.0.0" };
+  window.HubSpotStateCity = { attach, mount, states: STATES, cities: DATA, version: "2.1.0" };
   if (bootScript && bootScript.dataset.manual !== "true") {
     const settings = {};
     ["portalId", "formId", "region", "target", "stateField", "cityField"].forEach(key => {
